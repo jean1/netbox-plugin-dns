@@ -2,18 +2,17 @@
 
 from django.db import migrations
 
-from netbox_dns.choices import RecordTypeChoices
-
 
 def set_disable_ptr_false(apps, schema_editor):
     Record = apps.get_model("netbox_dns", "Record")
 
-    for record in Record.objects.exclude(
-        type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA)
-    ):
-        if record.disable_ptr:
-            record.disable_ptr = False
-            record.save()
+    Record.objects.filter(
+        disable_ptr=True,
+    ).exclude(
+        type__in=("A", "AAAA"),
+    ).update(
+        disable_ptr=False,
+    )
 
 
 class Migration(migrations.Migration):
@@ -22,5 +21,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(set_disable_ptr_false),
+        migrations.RunPython(
+            set_disable_ptr_false,
+            reverse_code=migrations.RunPython.noop,
+        ),
     ]
