@@ -114,7 +114,7 @@ class RecordViewTestCase(
             "ttl": 86420,
             "disable_ptr": False,
             "description": "New Description",
-            "expiration_date": date(2026, 6, 30),
+            "expiration_date": date(2126, 6, 30),
         }
 
         cls.csv_data = (

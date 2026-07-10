@@ -798,6 +798,7 @@ class ZoneTemplatingViewTestCase(ModelViewTestCase):
     def test_zone_bulk_update(self):
         self.add_permissions(
             "netbox_dns.add_zone",
+            "netbox_dns.change_zone",
             "netbox_dns.view_zonetemplate",
             "netbox_dns.view_nameserver",
         )
@@ -1150,6 +1151,7 @@ class ZoneTemplatingViewTestCase(ModelViewTestCase):
 
         self.add_permissions(
             "netbox_dns.add_zone",
+            "netbox_dns.change_zone",
             "netbox_dns.view_zonetemplate",
             "netbox_dns.view_nameserver",
         )
