@@ -45,11 +45,19 @@ class RecordBaseTable(TenancyColumnsMixin, PrimaryModelTable):
     )
     value = TemplateColumn(
         verbose_name=_("Value"),
-        template_code="{{ value|truncatechars:64 }}",
+        template_code="""
+            <span title="{{ value }}">
+               {{ value|truncatechars:48 }}
+            </span>
+        """,
     )
     unicode_value = TemplateColumn(
         verbose_name=_("Unicode Value"),
-        template_code="{{ value|truncatechars:64 }}",
+        template_code="""
+            <span title="{{ value }}">
+               {{ value|truncatechars:48 }}
+            </span>
+        """,
         accessor="value",
     )
     ttl = tables.Column(
