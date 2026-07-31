@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 from netbox.forms import (
@@ -93,6 +94,10 @@ class RecordForm(TenancyForm, PrimaryModelForm):
         initial_name = self.initial.get("name")
         if initial_name:
             self.initial["name"] = name_to_unicode(initial_name)
+
+        self.initial["disable_ptr"] = settings.PLUGINS_CONFIG.get("netbox_dns").get(
+            "record_disable_ptr", False
+        )
 
     view = DynamicModelChoiceField(
         queryset=View.objects.all(),

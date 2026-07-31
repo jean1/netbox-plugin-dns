@@ -80,6 +80,7 @@ class DNSConfig(PluginConfig):
         "filter_record_types-": [],
         "custom_record_types": [],
         "record_active_status": ["active"],
+        "record_disable_ptr": False,
         "dnssync_disabled": False,
         "dnssync_ipaddress_active_status": ["active", "dhcp", "slaac"],
         "dnssync_conflict_deactivate": False,

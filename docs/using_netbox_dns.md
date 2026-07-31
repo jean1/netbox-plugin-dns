@@ -421,7 +421,7 @@ Field           | Required | Explanation
 -----           | -------- | -----------
 **Zone**        | Yes      | The zone in which the record is to be defined
 **Type**        | Yes      | The type of the resource record. This can be one of a list of record types derived from [RFC 1035, Section 3.3](https://datatracker.ietf.org/doc/html/rfc1035#section-3.3), e.g. A or AAAA. The list of record types can be limited using the configuration variables `filter_record_types`, `filter_record_types+`, `filter_record_types-`. Defining custom record types is possible as well using the configuration variable `custom_record_types`.
-**Disable PTR** | Yes      | A checkbox indicating whether a PTR record should be generated for an A or AAAA record automatically if there is a zone suitable for the PTR in NetBox DNS
+**Disable PTR** | Yes      | A checkbox indicating whether a PTR record should be generated for an A or AAAA record automatically if there is a zone suitable for the PTR in NetBox DNS. The default setting can be set using the configuration variable `record_disable_ptr` in the configuration file.
 **Name**        | Yes      | The name of the record, e.g. the simple host name for A and AAAA records
 **Value**       | Yes      | The value of the record, e.g. the IPv4 or IPv6 addreess
 **Status**      | No       | The status of a record. Pre-defined choices are "Active" (which is the default) and "Inactive". Both the list of statuses for Record objects and the statuses considered active can be modified. See [Customizing record status choices](#record_status_customization)
