@@ -158,9 +158,9 @@ class ManagedRecordTable(RecordBaseTable):
                 address = None
 
         if address is None:
-            return format_html("&mdash;")
+            return format_html("&mdash;", "")
 
-        return format_html(f"<a href='{address.get_absolute_url()}'>{address}</a>")
+        return format_html("<a href='{}'>{}</a>", address.get_absolute_url(), address)
 
     def value_related_ip_address(self, record):
         if record.ipam_ip_address is not None:
