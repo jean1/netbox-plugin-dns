@@ -211,6 +211,7 @@ class RecordEventRuleTest(APITestCase):
             "plugins-api:netbox_dns-api:record-detail", kwargs={"pk": record.pk}
         )
         self.add_permissions("netbox_dns.change_record")
+        self.add_permissions("extras.view_tag")
         data = {
             "tags": [
                 {"name": self.tags[0].name},
@@ -243,6 +244,7 @@ class RecordEventRuleTest(APITestCase):
             "plugins-api:netbox_dns-api:record-detail", kwargs={"pk": record.pk}
         )
         self.add_permissions("netbox_dns.change_record")
+        self.add_permissions("extras.view_tag")
         data = {
             "tags": [{"name": self.tags[0].name}],
         }

@@ -194,22 +194,19 @@ A simple code example in python:
 import requests
 import json
 
-token = '<API_TOKEN>'
-nb_protocol = '<HTTP>'
-nb_host = '<NETBOX_HOST>'
-nb_port = '<NETBOX_PORT>'
+token = "<API_TOKEN>"
+nb_protocol = "<HTTP>"
+nb_host = "<NETBOX_HOST>"
+nb_port = "<NETBOX_PORT>"
 
 # Build the URL for the API request
-headers = {
-  'Content-Type': 'application/json',
-  'Authorization': 'Token '+ token
-}
+headers = {"Content-Type": "application/json", "Authorization": "Token " + token}
 
 ## Export IPAM to DNS -- CHANGE ID OF SCRIPT AND COMMIT IF NECESSARY
-url = nb_protocol+'://'+nb_host+':'+nb_port+"/api/extras/scripts/2/"
+url = nb_protocol + "://" + nb_host + ":" + nb_port + "/api/extras/scripts/2/"
 payload = '{"data": "vrf": null, "view": 1, "overwrite": true}, "commit": false}'
 
 response = requests.request("POST", url, headers=headers, data=payload)
 pretty_json = json.loads(response.text)
-print (json.dumps(pretty_json, indent=4))
+print(json.dumps(pretty_json, indent=4))
 ```
