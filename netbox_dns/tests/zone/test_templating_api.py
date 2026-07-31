@@ -100,6 +100,7 @@ class ZoneTemplatingAPITestCase(APITestCase):
 
     def test_create_zone(self):
         self.add_permissions("netbox_dns.add_zone")
+        self.add_permissions("netbox_dns.view_zonetemplate")
         self.add_permissions("extras.view_tag")
 
         url = reverse("plugins-api:netbox_dns-api:zone-list")
@@ -145,7 +146,13 @@ class ZoneTemplatingAPITestCase(APITestCase):
 
     def test_create_zone_override_fields(self):
         self.add_permissions("netbox_dns.add_zone")
+        self.add_permissions("netbox_dns.view_dnssecpolicy")
+        self.add_permissions("netbox_dns.view_nameserver")
+        self.add_permissions("netbox_dns.view_registrar")
+        self.add_permissions("netbox_dns.view_registrationcontact")
+        self.add_permissions("netbox_dns.view_zonetemplate")
         self.add_permissions("extras.view_tag")
+        self.add_permissions("tenancy.view_tenant")
 
         url = reverse("plugins-api:netbox_dns-api:zone-list")
 
@@ -238,6 +245,7 @@ class ZoneTemplatingAPITestCase(APITestCase):
 
     def test_update_zone(self):
         self.add_permissions("netbox_dns.change_zone")
+        self.add_permissions("netbox_dns.view_zonetemplate")
 
         zone = Zone.objects.create(
             name="test.example.com",
@@ -280,6 +288,7 @@ class ZoneTemplatingAPITestCase(APITestCase):
 
     def test_create_zone_missing_soa_mname(self):
         self.add_permissions("netbox_dns.add_zone")
+        self.add_permissions("netbox_dns.view_zonetemplate")
         self.add_permissions("extras.view_tag")
 
         url = reverse("plugins-api:netbox_dns-api:zone-list")
@@ -297,6 +306,7 @@ class ZoneTemplatingAPITestCase(APITestCase):
 
         response = self.client.post(url, data, format="json", **self.header)
         self.assertHttpStatus(response, status.HTTP_400_BAD_REQUEST)
+
         self.assertTrue(
             "soa_mname not set and no template or default value defined"
             in response.json().get("soa_mname")
@@ -304,6 +314,7 @@ class ZoneTemplatingAPITestCase(APITestCase):
 
     def test_create_zone_missing_soa_rname(self):
         self.add_permissions("netbox_dns.add_zone")
+        self.add_permissions("netbox_dns.view_zonetemplate")
         self.add_permissions("extras.view_tag")
 
         url = reverse("plugins-api:netbox_dns-api:zone-list")

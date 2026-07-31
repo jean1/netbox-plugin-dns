@@ -453,6 +453,7 @@ class DNSsyncIPAMAPITestCase(APITestCase):
         self.assertEqual(record.zone, zone1)
 
         self.add_permissions("ipam.change_ipaddress")
+        self.add_permissions("ipam.view_vrf")
 
         url = reverse("ipam-api:ipaddress-detail", kwargs={"pk": ip_address.pk})
 
@@ -490,6 +491,7 @@ class DNSsyncIPAMAPITestCase(APITestCase):
         self.assertEqual(record.zone, zone)
 
         self.add_permissions("ipam.change_ipaddress")
+        self.add_permissions("ipam.view_vrf")
 
         url = reverse("ipam-api:ipaddress-detail", kwargs={"pk": ip_address.pk})
 

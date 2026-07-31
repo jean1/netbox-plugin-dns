@@ -134,6 +134,7 @@ class ZoneEventRuleTest(APITestCase):
 
         url = reverse("plugins-api:netbox_dns-api:zone-detail", kwargs={"pk": zone.pk})
         self.add_permissions("netbox_dns.change_zone")
+        self.add_permissions("netbox_dns.view_nameserver")
         data = {
             "nameservers": [
                 {"name": self.nameservers[1].name},
@@ -186,6 +187,7 @@ class ZoneEventRuleTest(APITestCase):
 
         url = reverse("plugins-api:netbox_dns-api:zone-detail", kwargs={"pk": zone.pk})
         self.add_permissions("netbox_dns.change_zone")
+        self.add_permissions("extras.view_tag")
         data = {
             "tags": [
                 {"name": self.tags[0].name},
@@ -214,6 +216,7 @@ class ZoneEventRuleTest(APITestCase):
 
         url = reverse("plugins-api:netbox_dns-api:zone-detail", kwargs={"pk": zone.pk})
         self.add_permissions("netbox_dns.change_zone")
+        self.add_permissions("extras.view_tag")
         data = {
             "tags": [{"name": self.tags[0].name}],
         }
