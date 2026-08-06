@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("netbox_dns", "0032_record_expiration_date"),
+        ("netbox_dns", "0033_remove_ptr_from_inactive_zones"),
     ]
 
     operations = [
