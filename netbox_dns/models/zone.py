@@ -431,6 +431,10 @@ class Zone(ObjectModificationMixin, ContactsMixin, PrimaryModel):
         return self.rfc2317_prefix is not None
 
     @property
+    def is_external_zone(self):
+        return self.status == ZoneStatusChoices.STATUS_EXTERNAL
+
+    @property
     def inline_signing(self):
         if self.dnssec_policy is None:
             return None
@@ -771,9 +775,81 @@ class Zone(ObjectModificationMixin, ContactsMixin, PrimaryModel):
                 cname_zone.save_soa_serial()
                 cname_zone.update_soa_record()
 
+        self.update_static_rfc2317_cname_records()
         for ptr_zone in ptr_zones:
             ptr_zone.save_soa_serial()
             ptr_zone.update_soa_record()
+
+    def update_static_rfc2317_cname_records(self):
+        if (
+            not self.is_rfc2317_zone
+            or not self.rfc2317_parent_managed
+            or not self.is_external_zone
+        ):
+            if self.rfc2317_static_cname_records.exists():
+                self.delete_static_rfc2317_cname_records()
+
+            return
+
+        # +
+        # All static CNAME records must reside in the RFC 2317 parent zone. If the
+        # zone of the first one doesn't match, all records must be deleted before
+        # proceeding.
+        # -
+        if self.rfc2317_static_cname_records.exists():
+            if (
+                self.rfc2317_static_cname_records.first().zone
+                != self.rfc2317_parent_zone
+            ):
+                self.delete_static_rfc2317_cname_records()
+
+        # +
+        # Get the set of name, value tuples from the current static cname records
+        # and compare it with the set of tuples that are required. If there is a
+        # mismatch, the missing records must be created and the ones that are no
+        # longer required removed.
+        # -
+        rfc2317_parent_name = dns_name.from_text(self.rfc2317_parent_zone.name)
+
+        existing_records = set(
+            self.rfc2317_static_cname_records.values_list("name", "value")
+        )
+        required_records = set()
+
+        for ip_address in self.rfc2317_prefix:
+            ptr_fqdn = dns_name.from_text(ip_address.reverse_dns)
+
+            name = ptr_fqdn.relativize(rfc2317_parent_name)
+            value = name.derelativize(dns_name.from_text(self.fqdn))
+            required_records.add((name.to_text(), value.to_text()))
+
+        # +
+        # Remove all existing records that are not required.
+        # -
+        for record in self.rfc2317_static_cname_records.filter(
+            name__in=[
+                record_data[0] for record_data in existing_records - required_records
+            ],
+        ):
+            record.delete()
+
+        # +
+        # Create required records that are not existing.
+        # -
+        for name, value in required_records - existing_records:
+            cname_record = Record(
+                name=name,
+                zone=self.rfc2317_parent_zone,
+                type=RecordTypeChoices.CNAME,
+                value=value,
+                managed=True,
+                external_rfc2317_zone=self,
+            )
+            cname_record.save(save_zone_serial=False)
+
+    def delete_static_rfc2317_cname_records(self):
+        for record in self.rfc2317_static_cname_records.all():
+            record.delete(save_zone_serial=False)
 
     def clean_fields(self, exclude=None):
         defaults = settings.PLUGINS_CONFIG.get("netbox_dns")
