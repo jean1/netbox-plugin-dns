@@ -20,6 +20,7 @@ from netbox_dns.choices import (
     RecordClassChoices,
     RecordStatusChoices,
     RecordTypeChoices,
+    ZoneStatusChoices,
 )
 from netbox_dns.fields import AddressField
 from netbox_dns.mixins import ObjectModificationMixin
@@ -357,7 +358,7 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
         if self.type == RecordTypeChoices.A:
             ptr_zone = (
                 self.zone.view.zones.filter(
-                    active=True,
+                    Q(Q(active=True) | Q(status=ZoneStatusChoices.STATUS_EXTERNAL)),
                     rfc2317_prefix__net_contains=self.value,
                 )
                 .order_by("rfc2317_prefix__net_mask_length")
@@ -365,16 +366,24 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
             )
 
             if ptr_zone is not None:
+                if ptr_zone.is_external_zone:
+                    return None
+
                 return ptr_zone
 
-        return (
+        ptr_zone = (
             self.zone.view.zones.filter(
-                active=True,
+                Q(Q(active=True) | Q(status=ZoneStatusChoices.STATUS_EXTERNAL)),
                 arpa_network__net_contains=self.value,
             )
             .order_by("arpa_network__net_mask_length")
             .last()
         )
+
+        if ptr_zone is not None and ptr_zone.is_external_zone:
+            return None
+
+        return ptr_zone
 
     @property
     def is_delegation_record(self):
