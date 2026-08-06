@@ -383,7 +383,7 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
     def check_zone_cut_conflict(self):
         record_name = dns_name.from_text(self.fqdn)
 
-        for zone in self.zone.descendant_zones:
+        for zone in self.zone.descendant_zones.filter(active=True):
             zone_name = dns_name.from_text(zone.fqdn)
 
             if not record_name.is_subdomain(zone_name):
