@@ -1,9 +1,11 @@
 from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.db.models.functions import Length
 from django.utils.translation import gettext_lazy as _
 from dns import name as dns_name
 
 from netbox.views import generic
-from netbox_dns.choices import RecordTypeChoices
+from netbox_dns.choices import RecordTypeChoices, ZoneStatusChoices
 from netbox_dns.filtersets import RecordFilterSet
 from netbox_dns.forms import (
     RecordBulkEditForm,
@@ -76,12 +78,19 @@ class RecordView(generic.ObjectView):
                 data=cname_targets,
             )
 
-        if instance.zone.view.zones.filter(
-            name__iregex=regex_from_list(
-                get_parent_zone_names(instance.value_fqdn, min_labels=1)
-            ),
-            active=True,
-        ).exists():
+        target_zone = (
+            instance.zone.view.zones.filter(
+                Q(Q(active=True) | Q(status=ZoneStatusChoices.STATUS_EXTERNAL)),
+                name__iregex=regex_from_list(
+                    get_parent_zone_names(instance.value_fqdn, min_labels=1)
+                ),
+            )
+            .annotate(name_length=Length("name"))
+            .order_by("name_length")
+            .last()
+        )
+
+        if target_zone is not None and not target_zone.is_external_zone:
             raise (
                 CNAMEWarning(
                     _(
