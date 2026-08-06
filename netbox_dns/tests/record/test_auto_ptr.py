@@ -2,7 +2,7 @@ import ipaddress
 
 from django.test import TestCase, override_settings
 
-from netbox_dns.choices import RecordStatusChoices, RecordTypeChoices
+from netbox_dns.choices import RecordStatusChoices, RecordTypeChoices, ZoneStatusChoices
 from netbox_dns.models import NameServer, Record, Zone
 
 
@@ -1533,3 +1533,94 @@ class RecordAutoPTRTestCase(TestCase):
         self.assertIn(f_record1, r_record1.address_records.all())
         self.assertIn(f_record2, r_record2.address_records.all())
         self.assertIn(f_record3, r_record2.address_records.all())
+
+    def test_create_ipv4_ptr_inactive_zone(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[5]
+
+        name = "test1"
+        address = "10.2.0.42"
+
+        r_zone.status = ZoneStatusChoices.STATUS_RESERVED
+        r_zone.save()
+
+        Record.objects.create(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+        )
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+    def test_create_ipv4_ptr_deactivate_zone(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[5]
+
+        name = "test1"
+        address = "10.2.0.42"
+
+        f_record = Record.objects.create(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+        )
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR,
+            zone=r_zone,
+            name=reverse_name(address, r_zone),
+        )
+
+        self.assertEqual(f_record.ptr_record, r_record)
+
+        r_zone.status = ZoneStatusChoices.STATUS_RESERVED
+        r_zone.save()
+
+        f_record.refresh_from_db()
+
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+        self.assertIsNone(f_record.ptr_record)
+
+    def test_create_ipv4_ptr_activate_zone(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[5]
+
+        name = "test1"
+        address = "10.2.0.42"
+
+        r_zone.status = ZoneStatusChoices.STATUS_RESERVED
+        r_zone.save()
+
+        f_record = Record.objects.create(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+        )
+        with self.assertRaises(Record.DoesNotExist):
+            r_record = Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+        r_zone.status = ZoneStatusChoices.STATUS_ACTIVE
+        r_zone.save()
+
+        f_record.refresh_from_db()
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR,
+            zone=r_zone,
+            name=reverse_name(address, r_zone),
+        )
+        self.assertEqual(f_record.ptr_record, r_record)
