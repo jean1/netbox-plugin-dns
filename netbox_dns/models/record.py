@@ -357,6 +357,7 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
         if self.type == RecordTypeChoices.A:
             ptr_zone = (
                 self.zone.view.zones.filter(
+                    active=True,
                     rfc2317_prefix__net_contains=self.value,
                 )
                 .order_by("rfc2317_prefix__net_mask_length")
@@ -367,7 +368,10 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
                 return ptr_zone
 
         return (
-            self.zone.view.zones.filter(arpa_network__net_contains=self.value)
+            self.zone.view.zones.filter(
+                active=True,
+                arpa_network__net_contains=self.value,
+            )
             .order_by("arpa_network__net_mask_length")
             .last()
         )
