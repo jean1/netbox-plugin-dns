@@ -444,3 +444,27 @@ class RecordNameValidationTestCase(TestCase):
             type=RecordTypeChoices.AAAA,
             value="2001:db8::1",
         )
+
+    def test_rdata_name_validation_failure(self):
+        with self.assertRaises(ValidationError):
+            Record.objects.create(
+                name="name1",
+                zone=self.zones[0],
+                type=RecordTypeChoices.CNAME,
+                value="1.0/26.2.0.192.in-addr-arpa.",
+            )
+
+    @override_settings(
+        PLUGINS_CONFIG={
+            "netbox_dns": {
+                "tolerate_characters_in_zone_labels": "/",
+            }
+        }
+    )
+    def test_rdata_name_validation_allow_special_character_ok(self):
+        Record.objects.create(
+            name="name1",
+            zone=self.zones[0],
+            type=RecordTypeChoices.CNAME,
+            value="1.0/26.2.0.192.in-addr-arpa.",
+        )
