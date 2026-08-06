@@ -261,6 +261,14 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
         null=True,
         blank=True,
     )
+    external_rfc2317_zone = models.ForeignKey(
+        verbose_name=_("External RFC2317 Zone"),
+        to="Zone",
+        on_delete=models.SET_NULL,
+        related_name="rfc2317_static_cname_records",
+        null=True,
+        blank=True,
+    )
     expiration_date = models.DateField(
         verbose_name=_("Expiration Date"),
         blank=True,
