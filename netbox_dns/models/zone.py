@@ -1192,6 +1192,9 @@ class Zone(ObjectModificationMixin, ContactsMixin, PrimaryModel):
                 cname_zone.save_soa_serial()
                 cname_zone.update_soa_record()
 
+            for cname_record in self.rfc2317_static_cname_records.all():
+                cname_record.delete()
+
             rfc2317_child_zones = list(
                 self.rfc2317_child_zones.values_list("pk", flat=True)
             )
