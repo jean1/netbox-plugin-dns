@@ -626,17 +626,24 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
             ).first()
 
             if rfc2317_cname_record is not None:
-                rfc2317_cname_record.ttl = min_ttl(
-                    rfc2317_cname_record.rfc2317_ptr_records.exclude(pk=self.pk)
-                    .aggregate(Min("ttl"))
-                    .get("ttl__min"),
-                    self.ttl,
-                )
-                rfc2317_cname_record.save(
-                    update_fields=["ttl"], save_zone_serial=save_zone_serial
-                )
+                # +
+                # If there is an RFC2317 CNAME record but it is a static one, delete it
+                # -
+                if rfc2317_cname_record.external_rfc2317_zone is not None:
+                    rfc2317_cname_record.delete()
+                    rfc2317_cname_record = None
+                else:
+                    rfc2317_cname_record.ttl = min_ttl(
+                        rfc2317_cname_record.rfc2317_ptr_records.exclude(pk=self.pk)
+                        .aggregate(Min("ttl"))
+                        .get("ttl__min"),
+                        self.ttl,
+                    )
+                    rfc2317_cname_record.save(
+                        update_fields=["ttl"], save_zone_serial=save_zone_serial
+                    )
 
-            else:
+            if rfc2317_cname_record is None:
                 rfc2317_cname_record = Record(
                     name=cname_name,
                     type=RecordTypeChoices.CNAME,
@@ -644,6 +651,7 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
                     managed=True,
                     value=self.fqdn,
                     ttl=self.ttl,
+                    external_rfc2317_zone=None,
                 )
                 rfc2317_cname_record.save(save_zone_serial=save_zone_serial)
 
