@@ -999,7 +999,7 @@ class Zone(ObjectModificationMixin, ContactsMixin, PrimaryModel):
             self.arpa_network = None
 
         if self.is_rfc2317_zone:
-            if self.arpa_network is not None:
+            if self.arpa_network is not None and self.arpa_network.prefixlen != 32:
                 raise ValidationError(
                     {
                         "rfc2317_prefix": _(
