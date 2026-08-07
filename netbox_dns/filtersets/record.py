@@ -78,6 +78,14 @@ class RecordFilterSet(TenancyFilterSet, PrimaryModelFilterSet):
     expired = django_filters.BooleanFilter(
         method="filter_expired",
     )
+    external_rfc2317_zone_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=Zone.objects.all(),
+    )
+    external_rfc2317_zone = django_filters.ModelMultipleChoiceFilter(
+        queryset=Zone.objects.all(),
+        field_name="external_rfc2317_zone__name",
+        to_field_name="name",
+    )
 
     def filter_ip_address(self, queryset, name, value):
         if not value:

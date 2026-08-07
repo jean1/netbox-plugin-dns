@@ -187,6 +187,10 @@ class NetBoxDNSRecordType(PrimaryObjectType):
     rfc2317_ptr_records: list[
         Annotated["NetBoxDNSRecordType", strawberry.lazy("netbox_dns.graphql.types")]
     ]
+    external_rfc2317_zone: (
+        Annotated["NetBoxDNSZoneType", strawberry.lazy("netbox_dns.graphql.types")]
+        | None
+    )
 
 
 @strawberry_django.type(

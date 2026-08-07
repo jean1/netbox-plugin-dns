@@ -270,7 +270,7 @@ Field           | Required | Default  | Explanation
 -----           | -------- | -------  | -----------
 **Name**        | Yes      |          | The name of the zone. This is an FQDN that represents the DNS domain containing host names to be resolved or one of the special zones `in-addr.arpa` or `ip6.arpa`, which are reserved for the resolution of IPv4 and IPv6 addresses by the DNS infrastructure
 **View**        | No       |          | The name of the view the zone is associated with. If the view is not the default view, the zone name is also prefixed with the view name in brackets to make zones easier to distinguish in lists.
-**Status**      | Yes      | Active   | The zone's status. By default, selectable values are "Active", "Dynamic", "Reserved", "Deprecated" or "Parked". All zone status except "Active" and "Dynamic" are considered inactive by default, which has implications for the records in a zone as well as for PTR records in reverse zones that are automatically generated for address records in the zone. Both the list of statuses for Zone objects and the statuses considered active can be modified. See [Customizing zone status choices](#zone_status_customization)
+**Status**      | Yes      | Active   | The zone's status. By default, selectable values are "Active", "Dynamic", "Reserved", "Deprecated", "Extenal", or "Parked". All zone status except "Active" and "Dynamic" are considered inactive by default, which has implications for the records in a zone as well as for PTR records in reverse zones that are automatically generated for address records in the zone. Both the list of statuses for Zone objects and the statuses considered active can be modified. See [Customizing zone status choices](#zone_status_customization)
 **Nameservers** | No       | see [Default Settings](#zone_defaults) | The list of authoritative name servers for the zone
 **Default TTL** | Yes      | see [Default Settings](#zone_defaults) | The default TTL for all records in the zone if none is specified
 **Description** | No       |          | A short textual description of the zone
@@ -330,7 +330,7 @@ All fields are optional.
 
 If there is registration information for a zone, the zone's detail view contains an additional 'Registration' tab showing that information.
 
-### Automatic SOA SERIAL generation
+#### Automatic SOA SERIAL generation
 SOA SERIAL fields are crucial for the propagation of zone data from primary name servers to secondaries, as the process involves checking the zone's serial number on the secondary against the serial number on the primary and only performing the transfer when the primary has a higher serial number or the interval specified in the SOA REFRESH field has elapsed, after which the SERIAL is checked.
 
 This is particularly relevant when PTR records are automatically created from A and AAAA records and an update to a forward zone thus can result in one or several reverse zones being updated in the background as well.
@@ -351,7 +351,7 @@ Another tab displays all managed records in the zone. Since at the very least th
 
 ![Zone DetailManagedRecords](images/ZoneDetailManagedRecords.png)
 
-### <a name="zone_defaults"></a>Zone Default settings
+#### <a name="zone_defaults"></a>Zone Default settings
 The default settings for the Zone can be configured in the plugin configuration of NetBox. The following settings are available:
 
 Setting                 | Variable               | Factory Default
@@ -382,7 +382,7 @@ The default value for 'Generate SOA Serial' (`soa_serial_auto`) is `True` and ca
 
 After changing the configuration, NetBox must be restarted for the changes to take effect.
 
-### Information in the Zone detail view
+#### Information in the Zone detail view
 The detail view for zones can provide additional information tabs about zones, depending on whether there are any objects to display:
 
 Tab name                       | Description
@@ -392,6 +392,38 @@ Tab name                       | Description
 **Delegation Records**         | If there are any delegation records (NS, DS or glue address records) for child zones in the zone, this tab lists them.
 **Parent Delegation Records**  | This tab lists delegation records **for** the zone, i.e. delegation records that are located in one of the ancestor zones that apply to the zone. Usually delegation takes place in the direct parent, but there may be exceptions - the tab lists all levels of delegation records for the zone.
 **Child Zones**                | If the zone has **immediate** child zones, they are listed here. Note that zones that are hierarchically below the zone but not immediate clients they are not listed to avoid confusion.
+
+#### External Zones
+
+The zone status "External" has a special meaning in NetBox DNS.
+
+There is a use case for zones that are not managed in NetBox DNS but kept there for documentation purposes. These zones require some special handling to be useful, and also can provide additional functionality.
+
+This use case is facilitated by using the zone status "External". This status is considered inactive in most aspects, but has some special behaviour discerning it from other inactive statuses.
+
+##### PTR generation
+
+An external zone will not accept any `PTR` records when automatic PTR generation is enabled, but unlike other inactive statuses it will also block `PTR` records from being created further up the domain hierarchy. Take, for example, the zones
+
+```
+example.com
+0.10.in-addr.arpa
+0.0.10.in-addr.arpa
+```
+
+When an A record `name1` with the value `10.0.0.1` is created in `example.com`, normally a PTR record with the value `name1.example.com.` and the name `1` would be created in zone `0.0.10.in-addr.arpa`.
+
+Setting the zone `0.0.10.in-addr.arpa` to an inactive state (except "External") causes the PTR to be created as '0.1' in zone `0.10.in-addr.arpa`, as the inactive zone is skipped when searching for a suitable reverse zone.
+
+If the status of `0.0.10.in-addr.arpa` is, however, set to "External", the PTR record is not created at all. Searching for a suitable reverse zone stops at an external zone, because the record is considered to be managed elsewhere and not within NetBox DNS.
+
+##### RFC2137 static CNAMEs
+
+Another feature of external zones is the generation of static RFC2317 CNAMEs in parent zones, if the `Parent Managed` flag is set for an RFC2317 reverse zone and the parent zone is in NetBox DNS.
+
+When an RFC2317 zone is set to "External" status, NetBox DNS will assume it is managed by a third party, and so it will neither create PTR records in it, nor will (or can) it create the dynamic CNAME records in the parent zone. Instead, it creates the full set of CNAME records that match the RFC2317 zone's name and IP prefix in the parent zone.
+
+This leads to 128 CNAME records being created for a /25, 64 for a /26, and so on. These CNAME records are still managed records (i.e. not editable by the user), but they are related to the RFC2317 zone and not to particular records. Setting the zone to a different status will cause them to be deleted (and potentially be replaced by different RFC2317 CNAMEs, created dynamically).
 
 ### Records
 Record objects correspond to resource records (RR) that within zones. NetBox DNS differentiates between records maintained by the user and so-called 'managed records', which are created by NetBox DNS itself and cannot be edited manually. Currently there are three types of managed records:

@@ -16,6 +16,7 @@ class ZoneStatusChoices(ChoiceSet):
     STATUS_DEPRECATED = "deprecated"
     STATUS_PARKED = "parked"
     STATUS_DYNAMIC = "dynamic"
+    STATUS_EXTERNAL = "external"
 
     CHOICES = [
         (STATUS_ACTIVE, _("Active"), "blue"),
@@ -23,6 +24,7 @@ class ZoneStatusChoices(ChoiceSet):
         (STATUS_DEPRECATED, _("Deprecated"), "red"),
         (STATUS_PARKED, _("Parked"), "gray"),
         (STATUS_DYNAMIC, _("Dynamic"), "orange"),
+        (STATUS_EXTERNAL, _("External"), "yellow"),
     ]
 
 

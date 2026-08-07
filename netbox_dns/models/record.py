@@ -20,6 +20,7 @@ from netbox_dns.choices import (
     RecordClassChoices,
     RecordStatusChoices,
     RecordTypeChoices,
+    ZoneStatusChoices,
 )
 from netbox_dns.fields import AddressField
 from netbox_dns.mixins import ObjectModificationMixin
@@ -260,6 +261,14 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
         null=True,
         blank=True,
     )
+    external_rfc2317_zone = models.ForeignKey(
+        verbose_name=_("External RFC2317 Zone"),
+        to="Zone",
+        on_delete=models.SET_NULL,
+        related_name="rfc2317_static_cname_records",
+        null=True,
+        blank=True,
+    )
     expiration_date = models.DateField(
         verbose_name=_("Expiration Date"),
         blank=True,
@@ -357,7 +366,7 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
         if self.type == RecordTypeChoices.A:
             ptr_zone = (
                 self.zone.view.zones.filter(
-                    active=True,
+                    Q(Q(active=True) | Q(status=ZoneStatusChoices.STATUS_EXTERNAL)),
                     rfc2317_prefix__net_contains=self.value,
                 )
                 .order_by("rfc2317_prefix__net_mask_length")
@@ -365,16 +374,24 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
             )
 
             if ptr_zone is not None:
+                if ptr_zone.is_external_zone:
+                    return None
+
                 return ptr_zone
 
-        return (
+        ptr_zone = (
             self.zone.view.zones.filter(
-                active=True,
+                Q(Q(active=True) | Q(status=ZoneStatusChoices.STATUS_EXTERNAL)),
                 arpa_network__net_contains=self.value,
             )
             .order_by("arpa_network__net_mask_length")
             .last()
         )
+
+        if ptr_zone is not None and ptr_zone.is_external_zone:
+            return None
+
+        return ptr_zone
 
     @property
     def is_delegation_record(self):
@@ -609,17 +626,24 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
             ).first()
 
             if rfc2317_cname_record is not None:
-                rfc2317_cname_record.ttl = min_ttl(
-                    rfc2317_cname_record.rfc2317_ptr_records.exclude(pk=self.pk)
-                    .aggregate(Min("ttl"))
-                    .get("ttl__min"),
-                    self.ttl,
-                )
-                rfc2317_cname_record.save(
-                    update_fields=["ttl"], save_zone_serial=save_zone_serial
-                )
+                # +
+                # If there is an RFC2317 CNAME record but it is a static one, delete it
+                # -
+                if rfc2317_cname_record.external_rfc2317_zone is not None:
+                    rfc2317_cname_record.delete()
+                    rfc2317_cname_record = None
+                else:
+                    rfc2317_cname_record.ttl = min_ttl(
+                        rfc2317_cname_record.rfc2317_ptr_records.exclude(pk=self.pk)
+                        .aggregate(Min("ttl"))
+                        .get("ttl__min"),
+                        self.ttl,
+                    )
+                    rfc2317_cname_record.save(
+                        update_fields=["ttl"], save_zone_serial=save_zone_serial
+                    )
 
-            else:
+            if rfc2317_cname_record is None:
                 rfc2317_cname_record = Record(
                     name=cname_name,
                     type=RecordTypeChoices.CNAME,
@@ -627,6 +651,7 @@ class Record(ObjectModificationMixin, ContactsMixin, PrimaryModel):
                     managed=True,
                     value=self.fqdn,
                     ttl=self.ttl,
+                    external_rfc2317_zone=None,
                 )
                 rfc2317_cname_record.save(save_zone_serial=save_zone_serial)
 
