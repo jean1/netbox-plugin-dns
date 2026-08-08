@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from dns import name as dns_name
 
@@ -398,3 +399,25 @@ class RFC2317ExternalZoneTestCase(TestCase):
         self.assertIsNone(f_record.ptr_record)
         self.assertEqual(cname_record.external_rfc2317_zone, rfc2317_zone)
         self.assertFalse(cname_record.rfc2317_ptr_records.exists())
+
+    def test_validate_rfc2317_cname_collisions(self):
+        Record.objects.create(
+            name="1",
+            zone=self.zones[1],
+            type=RecordTypeChoices.TXT,
+            value="This is a record colliding with an RFC2317 CNAME",
+        )
+
+        with self.assertRaises(ValidationError) as collision:
+            Zone.objects.create(
+                name="0-31.0.0.10.in-addr.arpa",
+                status=ZoneStatusChoices.STATUS_EXTERNAL,
+                rfc2317_prefix="10.0.0.0/27",
+                rfc2317_parent_managed=True,
+                **self.zone_data,
+            )
+        self.assertIn("rfc2317_parent_managed", collision.exception.message_dict)
+        self.assertIn(
+            "would collide with one or more of the static CNAME records",
+            collision.exception.message_dict["rfc2317_parent_managed"][0],
+        )
