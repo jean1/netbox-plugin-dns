@@ -236,3 +236,33 @@ class ZoneChildZoneListView(generic.ObjectChildrenView):
 
     def get_children(self, request, parent):
         return parent.child_zones
+
+
+class RFC2317CNAMERecordViewTab(ViewTab):
+    def render(self, instance):
+        if instance.is_rfc2317_zone and not instance.rfc2317_parent_managed:
+            return super().render(instance)
+
+        return None
+
+
+@register_model_view(Zone, "rfc2317_cname_records")
+class ZoneRFC2317CNAMERecordView(generic.ObjectView):
+    queryset = Zone.objects.all()
+    template_name = "netbox_dns/zone/rfc2317_cname_records.html"
+
+    tab = RFC2317CNAMERecordViewTab(
+        label=_("RFC2317 CNAME Records"),
+    )
+
+    def get_extra_context(self, request, instance):
+        rfc2317_cname_records = []
+
+        for ip_address in instance.rfc2317_prefix:
+            rfc2317_cname_records.append(
+                f"{ip_address.reverse_dns} IN CNAME {str(ip_address).split('.')[-1]}.{instance.fqdn}"
+            )
+
+        return {
+            "rfc2317_cname_records": "\n".join(rfc2317_cname_records),
+        }

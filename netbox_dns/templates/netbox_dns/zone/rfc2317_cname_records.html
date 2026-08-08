@@ -1,0 +1,20 @@
+{% extends 'netbox_dns/zone/base.html' %}
+{% load helpers %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <h2 class="card-header d-flex justify-content-between">
+                {% trans "CNAME Records" %}
+                <div class="card-actions">
+                    {% copy_content "rfc2317_cname_records" %}
+                </div>
+            </h2>
+            <pre class="card-body" id="rfc2317_cname_records">{{ rfc2317_cname_records }}</pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
