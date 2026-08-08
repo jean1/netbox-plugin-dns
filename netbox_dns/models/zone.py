@@ -780,6 +780,29 @@ class Zone(ObjectModificationMixin, ContactsMixin, PrimaryModel):
             ptr_zone.save_soa_serial()
             ptr_zone.update_soa_record()
 
+    def check_static_rfc2317_cname_records(self):
+        if (
+            not self.is_rfc2317_zone
+            or not self.rfc2317_parent_managed
+            or not self.is_external_zone
+        ):
+            return
+
+        colliding_records = self.rfc2317_parent_zone.records.filter(
+            active=True,
+            fqdn__in=[ip_address.reverse_dns for ip_address in self.rfc2317_prefix],
+            rfc2317_ptr_records__isnull=True,
+        )
+
+        if colliding_records.exists():
+            raise ValidationError(
+                {
+                    "rfc2317_parent_managed": _(
+                        "There are existing active records in zone {zone} that would collide with one or more of the static CNAME records for this zone."
+                    ).format(zone=self.rfc2317_parent_zone)
+                }
+            )
+
     def update_static_rfc2317_cname_records(self):
         if (
             not self.is_rfc2317_zone
@@ -1038,6 +1061,7 @@ class Zone(ObjectModificationMixin, ContactsMixin, PrimaryModel):
                     }
                 )
 
+            self.check_static_rfc2317_cname_records()
         else:
             self.rfc2317_parent_managed = False
             self.rfc2317_parent_zone = None
