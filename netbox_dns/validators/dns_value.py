@@ -66,8 +66,9 @@ def validate_record_value(record):
             return
 
         try:
+            unquoted_value = record.value.lstrip('"').rstrip('"')
             rr = rdata.from_text(
-                RecordClassChoices.IN, record.type, f'"{record.value}"'
+                RecordClassChoices.IN, record.type, f'"{unquoted_value}"'
             )
         except SyntaxError as exc:
             if str(exc) == "string too long":
