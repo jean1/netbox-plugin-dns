@@ -930,6 +930,32 @@ class RecordValidationTestCase(TestCase):
                 record.save()
 
             self.assertEqual(record.value, split_text_value(saved_value))
+            self.assertNotEqual(record.value, saved_value)
+
+    def test_valid_txt_long_value_dkim(self):
+        self.maxDiff = None
+
+        zone = self.zones[0]
+
+        record_value = (
+            "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnAzZ"
+            "+2/ghCr3BhM8BY1ZTteTZYCvCJsNYa9aq+ZWOvuEi3H3yMASKLIvJEq60gjpDLi2Oo"
+            "bvNgjDUfdsnetCdN1IkOzwjgpFgRWU1hqrZySTmfspLxSMdq/mYppZ74SltbNXffuf"
+            "e/5ejlwYU0nHmb61pGOOgPNnc3nvwXSWwnXyD7Uu9lJcDglltq+g8UrVg9JP9ejHeG"
+            "oGgaSCFwVTi3xCCYIX8qeQbbbDXh62jTpxlSm8tSVPekP1MWGmcQhGk8sFxn2QE93/"
+            "NzwRbljitRsNU+czWJ9hH6suMDWwOBmfBgh4Y3Cbl2+mjZEhUr6YT/AN8eBIXtV4xe"
+            "Rnf2qCnQIDAQAB"
+        )
+
+        record = Record.objects.create(
+            name="main._domainkey",
+            type=RecordTypeChoices.TXT,
+            zone=zone,
+            value=record_value,
+        )
+
+        self.assertEqual(record.value, split_text_value(record_value))
+        self.assertNotEqual(record.value, record_value)
 
     def test_invalid_txt_value_charset(self):
         zone = self.zones[0]
