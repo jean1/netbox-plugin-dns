@@ -1,5 +1,4 @@
 import strawberry_django
-
 from strawberry_django import StrFilterLookup
 
 from netbox.graphql.filters import PrimaryModelFilter
