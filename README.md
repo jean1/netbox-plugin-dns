@@ -16,10 +16,6 @@ The NetBox DNS plugin enables NetBox to manage operational DNS data such as name
 <a href="https://pepy.tech/project/netbox-plugin-dns"><img alt="Downloads/Month" src="https://static.pepy.tech/personalized-badge/netbox-plugin-dns?period=weekly&left_color=BLACK&right_color=BLUE&left_text=Downloads%2fWeek"></a>
 </div>
 
-> [!WARNING]
-> ** This is a beta release including support for the NetBox Branching plugin. Please test it with Branching, but don't use it in production and make sure you have a backup available. **
-> ** Really. Do have a backup! **
-
 ## Objectives
 NetBox DNS is designed to be the 'DNS Source of Truth' analogous to NetBox being the 'Network Source of Truth'.
 
