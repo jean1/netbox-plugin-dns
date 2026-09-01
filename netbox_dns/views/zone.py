@@ -14,6 +14,7 @@ from netbox_dns.tables import (
     DelegationRecordTable,
     ManagedRecordTable,
     RecordTable,
+    RelatedZoneTable,
     ZoneTable,
 )
 from utilities.views import ViewTab, register_model_view
@@ -47,13 +48,32 @@ class ZoneView(generic.ObjectView):
         "records",
     )
 
+    def get_related_zones(self, instance):
+        related_zones = Zone.objects.filter(
+            name=instance.name,
+        ).exclude(
+            pk=instance.pk,
+        )
+
+        if related_zones:
+            return RelatedZoneTable(
+                data=related_zones,
+            )
+
+        return None
+
     def get_extra_context(self, request, instance):
         ns_warnings, ns_errors = instance.check_nameservers()
+
+        related_zones_table = self.get_related_zones(instance)
+        if related_zones_table is not None:
+            related_zones_table.configure(request)
 
         context = {
             "nameserver_warnings": ns_warnings,
             "nameserver_errors": ns_errors,
             "parent_zone": instance.parent_zone,
+            "related_zones_table": related_zones_table,
         }
 
         name = dns_name.from_text(instance.name)

@@ -1,5 +1,5 @@
 {
-  "dnsseckeytemplate:api_list_objects": 14,
+  "dnsseckeytemplate:api_list_objects": 13,
   "dnsseckeytemplate:list_objects_with_permission": 18,
   "dnssecpolicy:api_list_objects": 15,
   "dnssecpolicy:list_objects_with_permission": 18,
@@ -7,7 +7,7 @@
   "nameserver:list_objects_with_permission": 18,
   "record:api_list_objects": 15,
   "record:list_objects_with_permission": 23,
-  "recordtemplate:api_list_objects": 14,
+  "recordtemplate:api_list_objects": 13,
   "recordtemplate:list_objects_with_permission": 18,
   "registrar:api_list_objects": 12,
   "registrar:list_objects_with_permission": 17,
