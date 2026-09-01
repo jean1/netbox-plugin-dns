@@ -66,6 +66,7 @@ NetBox Version | NetBox DNS Version | Comment
 4.3            | 1.3 - 1.4          |
 4.4            | 1.4                |
 4.5            | 1.5                |
+4.6            | 1.6                | Supports NetBox Branching
 
 ## Installation & Configuration
 
