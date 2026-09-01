@@ -35,8 +35,8 @@ The installation of plugins in general is described in the [NetBox documentation
 ### Requirements
 The installation of NetBox DNS requires a Python interpreter and a working NetBox deployment. The following versions are currently supported:
 
-* NetBox 4.3.0 or higher
-* Python 3.10 or higher
+* NetBox 4.5.0 or higher
+* Python 3.12 or higher
 
 ### Compatibility
 NetBox DNS is compatible with the following NetBox versions.
@@ -53,17 +53,13 @@ NetBox Version | NetBox DNS Version | Comment
 4.3            | 1.3                |
 4.4            | 1.4                |
 4.5 - 4.6      | 1.5                |
+4.5 - 4.6      | 1.6                | Supports NetBox Branching
 
 For earlier version of NetBox, please use the old version of the PyPI module `netbox-dns`.  Please be aware that this version is no longer supported and will not receive any further updates. We therefore strongly recommend that you move to at least NetBox 3.5 and use the latest supported version of NetBox DNS.
 
 #### NetBox Branching Compatibility
 
-**As a result of some issues with NetBox Branching still under investigation,
-NetBox DNS is currently not compatible with the new NetBox Branching plugin.**
-
-This affects multiple aspects of the branching functionality, and currently (`netboxlabs-branching-plugin` version 0.4.0) there is no workaround. Do not try to use NetBox Branching together with NetBox DNS until these issues are resolved.
-
-This warning will be updated as soon as the situation is resolved.
+This release contains support for the NetBox Branching-Plugin, kindly contributed by Art Hanson from NetBox Labs. As this code is fairly new, please open GitHub issues for any problem you might encounter, so potential quirks can be sorted out in a timely manner.
 
 ### Installation of NetBox DNS
 NetBox DNS is available as a PyPi module and can be installed using pip:
