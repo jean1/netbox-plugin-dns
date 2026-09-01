@@ -52,6 +52,7 @@ NetBox Version | NetBox DNS Version | Comment
 4.2            | 1.2                |
 4.3 - 4.4      | 1.4                |
 4.5 - 4.6      | 1.5                |
+4.5 - 4.6      | 1.6                | Supports NetBox Branching
 4.7            | 1.7                |
 
 For earlier version of NetBox, please use the old version of the PyPI module `netbox-dns`.  Please be aware that this version is no longer supported and will not receive any further updates. We therefore strongly recommend that you move to at least NetBox 3.5 and use the latest supported version of NetBox DNS.
