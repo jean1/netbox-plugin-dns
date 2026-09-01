@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from netbox.tables import (
     ActionsColumn,
+    BooleanColumn,
     ChoiceFieldColumn,
     PrimaryModelTable,
     TagColumn,
@@ -14,6 +15,7 @@ from tenancy.tables import TenancyColumnsMixin
 __all__ = (
     "ZoneTable",
     "ZoneDisplayTable",
+    "RelatedZoneTable",
 )
 
 
@@ -105,3 +107,31 @@ class ZoneDisplayTable(ZoneTable):
         pass
 
     actions = ActionsColumn(actions=("changelog",))
+
+
+class RelatedZoneTable(PrimaryModelTable):
+    class Meta(PrimaryModelTable.Meta):
+        model = Zone
+
+        fields = (
+            "status",
+            "active",
+        )
+
+        default_columns = (
+            "name",
+            "view",
+            "status",
+            "active",
+        )
+
+    name = tables.Column(
+        linkify=True,
+    )
+    view = tables.Column(
+        linkify=True,
+    )
+    status = ChoiceFieldColumn()
+    active = BooleanColumn()
+
+    actions = ActionsColumn(actions=())
