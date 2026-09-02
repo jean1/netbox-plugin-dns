@@ -370,8 +370,15 @@ class ViewPrefixEditForm(forms.ModelForm):
         if self._permission_denied:
             return prefix
 
-        old_views = prefix.netbox_dns_views.all()
-        views = self.cleaned_data.get("views")
+        # +
+        # TODO: Workaround for Django 6.1 difference() failing with ordered models:
+        #
+        # * Added an empty order_by()
+        #
+        # see https://github.com/django/django/pull/21798
+        # -
+        old_views = prefix.netbox_dns_views.order_by()
+        views = self.cleaned_data.get("views").order_by()
 
         for view in views.difference(old_views):
             view.prefixes.add(prefix)

@@ -131,7 +131,7 @@ jobs:
                 pip install -r requirements.txt -U
                 # register_branching_resolver (the API this integration relies on)
                 # is available in netbox-branching >= 1.0.4.
-                pip install 'netboxlabs-netbox-branching>=1.0.4'
+                pip install 'netboxlabs-netbox-branching>=1.2.0b1'
 
           - name: Tune PostgreSQL for branching test performance
             run: |

@@ -77,7 +77,7 @@ class RecordViewSet(NetBoxModelViewSet):
         if not isinstance(data, list):
             data = [data]
 
-        if any(record.get("managed") for record in data):
+        if any(isinstance(record, dict) and record.get("managed") for record in data):
             raise serializers.ValidationError(_("'managed' is True, refusing create"))
 
         return super().create(request, *args, **kwargs)

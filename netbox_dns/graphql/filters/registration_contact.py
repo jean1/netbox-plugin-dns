@@ -1,9 +1,5 @@
 import strawberry_django
-
-try:
-    from strawberry_django import StrFilterLookup
-except ImportError:
-    from strawberry_django import FilterLookup as StrFilterLookup
+from strawberry_django import StrFilterLookup
 
 from netbox.graphql.filters import PrimaryModelFilter
 from netbox_dns.models import RegistrationContact
